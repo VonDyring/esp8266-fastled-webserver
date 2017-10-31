@@ -1,5 +1,6 @@
 /*
-   ESP8266 + FastLED + IR Remote + MSGEQ7: https://github.com/jasoncoon/esp8266-fastled-webserver
+   M.nu ESP8266 + FastLED web server.
+   Based on: https://github.com/jasoncoon/esp8266-fastled-webserver
    Copyright (C) 2015 Jason Coon
 
    This program is free software: you can redistribute it and/or modify
@@ -14,6 +15,14 @@
 
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+   This code has been adjusted for use with WeMos D1 Mini and the
+   M.nu Levelshift Shield, but can of course be tailored to use with other
+   hardware.
+
+   Changes:
+
 */
 
 #include "FastLED.h"
@@ -143,7 +152,7 @@ void setup(void) {
     String macID = String(mac[WL_MAC_ADDR_LENGTH - 2], HEX) +
                    String(mac[WL_MAC_ADDR_LENGTH - 1], HEX);
     macID.toUpperCase();
-    String AP_NameString = "ESP8266 Thing " + macID;
+    String AP_NameString = "ESP8266 X-Mas " + macID;
 
     char AP_NameChar[AP_NameString.length() + 1];
     memset(AP_NameChar, 0, AP_NameString.length() + 1);
@@ -280,6 +289,7 @@ PatternAndNameList patterns = {
   { pride, "Pride" },
   { rainbow, "Rainbow" },
   { rainbowWithGlitter, "Rainbow With Glitter" },
+  { simpleGlitter, "Simple Glitter"},
   { confetti, "Confetti" },
   { sinelon, "Sinelon" },
   { juggle, "Juggle" },
@@ -610,6 +620,11 @@ void rainbowWithGlitter()
   addGlitter(80);
 }
 
+void simpleGlitter() {
+  // Simple glitter, only white LEDs
+  addGlitter(60);
+}
+
 void addGlitter( fract8 chanceOfGlitter)
 {
   if ( random8() < chanceOfGlitter) {
@@ -758,4 +773,3 @@ void palettetest()
   startindex--;
   fill_palette( leds, NUM_LEDS, startindex, (256 / NUM_LEDS) + 1, gCurrentPalette, 255, LINEARBLEND);
 }
-
