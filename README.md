@@ -1,77 +1,70 @@
-FastLED + ESP8266 Web Server
+X-mas lights FastLED + WeMos D1 Mini (ESP8266) Web Server
 =========
 
-Control an addressable LED strip with an ESP8266 via a web browser or infrared remote control.
+Mjukvara för att med en WeMos D1 Mini och en
 
-Hardware
+Hårdvara
 --------
 
-An ESP8266 development board, such as the [Adafruit HUZZAH ESP8266 Breakout]:
+Vi använder mjukvaran till WeMos D1 Mini och WS2801-slingor.
+Eftersom WS2801 kommunicerar på 5V använder vi en egentillverkad Levelshift Shield som omvandlar WeMosens 3.3V till 5V.
+Förslag på delar:
 
-[![Adafruit HUZZAH ESP8266 Breakout](https://cdn-shop.adafruit.com/310x233/2471-10.jpg)](https://www.adafruit.com/products/2471)
+[![WeMos D1 Mini](https://images.m.nu/data/product/1076f860/wemos_wemos_d1_mini.JPG)](https://www.m.nu/esp8266/d1-mini)
+[![D1 Mini Levelshift Shield](https://images.m.nu/data/product/1076f860/m_punkt_nu_levelshift_shield_for_wemos_d1_mini.JPG)](https://www.m.nu/esp8266-shields/levelshift-shield-for-wemos-d1-mini)
 
-Addressable LED strip, such as the [Adafruit NeoPixel Ring]:
+[![Enfärgad WS2801-slinga](https://images.m.nu/data/product/1076f860/no_name_digital_rgb_led-slinga_ws2801_-_enfargad_kabel_svartvit.jpg)](https://www.m.nu/dotstar-ws2801/digital-rgb-led-slinga-ws2801-enfargad-kabel-svart-vit-1)
 
-[![Adafruit NeoPixel Ring](https://www.adafruit.com/images/145x109/1586-00.jpg)](https://www.adafruit.com/product/1586)
+Spänningsmatning (**5V**) kan i detta fall anslutas direkt till slingans matningskablar som då också förser WeMosen med ström.
 
-Features
+Observera att FastLED är kompatibelt med de flesta adresserbara LED-typer, så genom att ändra koden kan man enkelt använda andra typer (t.ex. NeoPixel, WS2811/WS2812, APA102 etc).
+
+Funktioner
 --------
-* Turn the NeoPixel Ring on and off
-* Adjust the brightness
-* Change the display pattern
-* Adjust the color
+* Slå av och på ljusslingan
+* Justera ljusstyrka
+* Ändra vilket ljusläge som visas
+* Justera färg
 
-Web App
+Planerade funktioner
+---------------------
+* Justera hastighet
+* Fler ljuslägen
+
+Webb-applikation
 --------
 
-![Web App](webapp.png)
+![Webb-app](webapp.png)
 
-Patterns are requested by the app from the ESP8266, so as new patterns are added, they're automatically listed in the app.
+Webb-applikationen lagras på det inbyggna flashminnet på ESP-chippet (SPIFFS). Denna laddas upp separat från sketchen, vilket gås igenom nedan.
 
-The web app is stored in SPIFFS (on-board flash memory).
+Det hela är en enkel webbsida som använder [jQuery](https://jquery.com) och [Bootstrap](http://getbootstrap.com).
+Den har knappar för av/på, en slider för att ställa ljusstyrka, och dropdown-menyer för att välja färgmönster/blinkmönster. En färgväljare finns också (baserad på [jQuery MiniColors](http://labs.abeautifulsite.net/jquery-minicolors)). Alla ändringar skickas automatiskt till styrenheten, men ljusstyrkan och färgvalet skickas med fördröjning för att inte överbelasta ESP:n med anrop.
 
-The web app is a single page app that uses [jQuery](https://jquery.com) and [Bootstrap](http://getbootstrap.com).  It has buttons for On/Off, a slider for brightness, a pattern selector, and a color picker (using [jQuery MiniColors](http://labs.abeautifulsite.net/jquery-minicolors)).  Event handlers for the controls are wired up, so you don't have to click a 'Send' button after making changes.  The brightness slider and the color picker use a delayed event handler, to prevent from flooding the ESP8266 web server with too many requests too quickly.
-
-The only drawback to SPIFFS that I've found so far is uploading the files can be extremely slow, requiring several minutes, sometimes regardless of how large the files are.  It can be so slow that I've been just developing the web app and debugging locally on my desktop (with a hard-coded IP for the ESP8266), before uploading to SPIFFS and testing on the ESP8266.
-
-Installing
+Installation
 -----------
-The app is installed via the Arduino IDE which can be [downloaded here](https://www.arduino.cc/en/main/software). The ESP8266 boards will need to be added to the Arduino IDE which is achieved as follows. Click File > Preferences and copy and paste the URL "http://arduino.esp8266.com/stable/package_esp8266com_index.json" into the Additional Boards Manager URLs field. Click OK. Click Tools > Boards: ... > Boards Manager. Find and click on ESP8266 (using the Search function may expedite this). Click on Install. After installation, click on Close and then select your ESP8266 board from the Tools > Board: ... menu.
+För att lägga in mjukvaran använder du Arduino IDE:n som kan [hämtas här](https://www.arduino.cc/en/main/software). Du behöver lägga till "ESP8266 Core" för att jobba mot WeMos och andra ESP-baserade chipp, detta görs under __File__ > __Preferences__, kopiera in URL:en "http://arduino.esp8266.com/stable/package_esp8266com_index.json" i __Additional Boards Manager URLs__-fältet. Klicka på OK. Klicka därefter på __Tools__ > __Boards: ...__ > __Boards Manager__. Hitta och klicka på __ESP8266__ (att söka kan förenkla detta). Klicka på __Install__. Efter installationen, klicka på __Close__ och därefter väljer du din ESP8266-variant under __Tools > Board: ...__ (i vårt fall WeMos D1 Mini).
 
-The app depends on the following libraries. They must either be downloaded from GitHub and placed in the Arduino 'libraries' folder, or installed as [described here](https://www.arduino.cc/en/Guide/Libraries) by using the Arduino library manager.
+Appen behöver följande bibliotek, som antingen kan laddas ner manuellt från Github och läggas i Arduino IDE:ns __libraries__-mapp, eller installeras enligt [instruktion här (engelska)](https://www.arduino.cc/en/Guide/Libraries) genom att använda __Arduino library manager__.
 
 * [FastLED](https://github.com/FastLED/FastLED)
-* [IRremoteESP8266](https://github.com/sebastienwarin/IRremoteESP8266)
 * [Arduino WebSockets](https://github.com/Links2004/arduinoWebSockets)
 
-Download the app code from GitHub using the green Clone or Download button from [the GitHub project main page](https://github.com/jasoncoon/esp8266-fastled-webserver) and click Download ZIP. Decompress the ZIP file in your Arduino sketch folder.
+Ladda därefter ned koden härifrån Github, med den gröna __Clone or Download__-knappen ovan. Klicka på __Download ZIP__, och packa upp innehållet i din Arduino-sketchmapp.
+Gör eventuella modifikationer (t.ex. antal LEDs och **WiFi-inlogg**) och ladda därefter upp koden med Upload-knappen i IDE:n. Kom ihåg att välja rätt ESP-typ och seriellport under __Tools__.
 
-The web app needs to be uploaded to the ESP8266's SPIFFS.  You can do this within the Arduino IDE after installing the [Arduino ESP8266FS tool](https://github.com/esp8266/Arduino/blob/master/doc/filesystem.md#uploading-files-to-file-system).
+Filerna som visar webbapplikationen behöver laddas upp separat till chippets SPIFFS. För att göra det behöver du installera en plugin till Arduino IDE:n, [Arduino ESP8266FS tool](https://github.com/esp8266/Arduino/blob/master/doc/filesystem.rst#uploading-files-to-file-system).
+Ladda ner filen. Den ska sen packas upp i Arduino/tools-mappen enligt instruktionerna. När du lagt in den där och startat om IDE:n kan du öppna sketchen och klicka __Tools > ESP8266 Sketch Data Upload__, vilket laddar upp filerna till minnet. Observera att detta kan gå ganska långsamt, ibland tar det flera minuter.
 
-With ESP8266FS installed upload the web app using `ESP8266 Sketch Data Upload` command in the Arduino Tools menu.
+Komprimering
+------------
+Det är möjligt att komprimera filerna med gzip innan uppladdning för att spara plats, se huvudrepots instruktioner för direktiv då vi inte sett någon anledning att göra det.
 
-Then enter your wi-fi network SSID and password in the .ino file, and upload the sketch using the Upload button.
-
-Compression
------------
-
-The web app files can be gzip compressed before uploading to SPIFFS by running the following command:
-
-`gzip -r data/`
-
-The ESP8266WebServer will automatically serve any .gz file.  The file index.htm.gz will get served as index.htm, with the content-encoding header set to gzip, so the browser knows to decompress it.  The ESP8266WebServer doesn't seem to like the Glyphicon fonts gzipped, though, so I decompress them with this command:
-
-`gunzip -r data/fonts/`
-
-REST Web services
+REST-tjänst
 -----------------
 
-The firmware implements basic [RESTful web services](https://en.wikipedia.org/wiki/Representational_state_transfer) using the ESP8266WebServer library.  Current values are requested with HTTP GETs, and values are set with POSTs using query string parameters.  It can run in connected or standalone access point modes.
+Mjukvaran tillhandahåller, förutom webbsidan, en enkel ["RESTful" webbtjänst](https://en.wikipedia.org/wiki/Representational_state_transfer) med hjälp av __ESP8266WebServer__-biblioteket. Befintliga värden hämtas med HTTP GETs, och nya värden sätts med POSTs och parametrar i anropet.  Enheten kan ansluta till en befintlig router/accesspunkt eller som fristående accesspunkt.
 
-Infrared Remote Control
------------------------
-
-Control via infrared remote control is also supported, via the [ESP8266 port of the IRremote library](https://github.com/sebastienwarin/IRremoteESP8266).
-
-[Adafruit NeoPixel Ring]:https://www.adafruit.com/product/1586
-[Adafruit HUZZAH ESP8266 Breakout]:https://www.adafruit.com/products/2471
+IR-styrning
+-------------
+Huvudrepot har IR-styrning, men detta såg vi som onödigt och valde att plocka bort det ur koden.
