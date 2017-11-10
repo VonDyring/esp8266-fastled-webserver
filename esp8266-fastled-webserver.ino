@@ -24,7 +24,6 @@
    Changes:
 
 */
-
 #include "FastLED.h"
 FASTLED_USING_NAMESPACE
 
@@ -33,27 +32,20 @@ extern "C" {
 }
 
 #include <ESP8266WiFi.h>
+#include <DNSServer.h>
 #include <ESP8266WebServer.h>
+#include <WiFiManager.h> //https://github.com/tzapu/WiFiManager
 #include <FS.h>
 #include <EEPROM.h>
 #include "GradientPalettes.h"
-
-const bool apMode = false;
-
-// AP mode password
-const char WiFiAPPSK[] = "";
-
-// Wi-Fi network to connect to (if not in AP mode)
-const char* ssid = "";
-const char* password = "";
 
 ESP8266WebServer server(80);
 
 #define DATA_PIN      D6     // for Huzzah: Pins w/o special function:  #4, #5, #12, #13, #14; // #16 does not work :(
 #define CLK_PIN       D7
 #define LED_TYPE      WS2801
-#define COLOR_ORDER   GRB
-#define NUM_LEDS      5
+#define COLOR_ORDER   RGB
+#define NUM_LEDS      50
 
 #define MILLI_AMPS         2000     // IMPORTANT: set here the max milli-Amps of your power supply 5V 2A = 2000
 #define FRAMES_PER_SECOND  120 // here you can control the speed. With the Access Point / Web Server the animations run a bit slower.
@@ -73,6 +65,34 @@ uint8_t brightness = brightnessMap[brightnessIndex];
 // 20-120 is better for deployment
 #define SECONDS_PER_PALETTE 10
 
+///////////////////////////// PROTOTYPES
+void loadSettings();
+void sendAll();
+void sendPower();
+void sendPattern();
+void sendPalette();
+void sendBrightness();
+void sendSolidColor();
+void setPower(uint8_t value);
+void setSolidColor(CRGB color);
+void setSolidColor(uint8_t r, uint8_t g, uint8_t b);
+void adjustPattern(bool up);
+void setPattern(int value);
+void setPalette(int value);
+void adjustBrightness(bool up);
+void setBrightness(int value);
+void showSolidColor();
+void rainbow();
+void rainbowWithGlitter();
+void simpleGlitter();
+void addGlitter( fract8 chanceOfGlitter);
+void confetti();
+void sinelon();
+void bpm();
+void juggle();
+void pride();
+void colorwaves();
+void palettetest();
 ///////////////////////////////////////////////////////////////////////
 
 // Forward declarations of an array of cpt-city gradient palettes, and
@@ -105,6 +125,10 @@ void setup(void) {
   Serial.begin(115200);
   delay(100);
   Serial.setDebugOutput(true);
+
+  // If device does not have valid AP login, starts as AP with WiFi config @ http://192.168.4.1
+  WiFiManager wifiManager;
+  wifiManager.autoConnect("XMasLights", "m.nu"); //call without parameter for unique name (i.e. "ESP" + ID)
 
   //FastLED.addLeds<LED_TYPE, DATA_PIN, COLOR_ORDER>(leds, NUM_LEDS);         // for WS2812 (Neopixel)
   FastLED.addLeds<LED_TYPE,DATA_PIN,CLK_PIN,COLOR_ORDER>(leds, NUM_LEDS); // for APA102 (Dotstar), WS2801 etc
@@ -141,47 +165,47 @@ void setup(void) {
     Serial.printf("\n");
   }
 
-  if (apMode)
-  {
-    WiFi.mode(WIFI_AP);
-
-    // Do a little work to get a unique-ish name. Append the
-    // last two bytes of the MAC (HEX'd) to "Thing-":
-    uint8_t mac[WL_MAC_ADDR_LENGTH];
-    WiFi.softAPmacAddress(mac);
-    String macID = String(mac[WL_MAC_ADDR_LENGTH - 2], HEX) +
-                   String(mac[WL_MAC_ADDR_LENGTH - 1], HEX);
-    macID.toUpperCase();
-    String AP_NameString = "ESP8266 X-Mas " + macID;
-
-    char AP_NameChar[AP_NameString.length() + 1];
-    memset(AP_NameChar, 0, AP_NameString.length() + 1);
-
-    for (int i = 0; i < AP_NameString.length(); i++)
-      AP_NameChar[i] = AP_NameString.charAt(i);
-
-    WiFi.softAP(AP_NameChar, WiFiAPPSK);
-
-    Serial.printf("Connect to Wi-Fi access point: %s\n", AP_NameChar);
-    Serial.println("and open http://192.168.4.1 in your browser");
-  }
-  else
-  {
-    WiFi.mode(WIFI_STA);
-    Serial.printf("Connecting to %s\n", ssid);
-    if (String(WiFi.SSID()) != String(ssid)) {
-      WiFi.begin(ssid, password);
-    }
-
-    while (WiFi.status() != WL_CONNECTED) {
-      delay(500);
-      Serial.print(".");
-    }
-
-    Serial.print("Connected! Open http://");
-    Serial.print(WiFi.localIP());
-    Serial.println(" in your browser");
-  }
+//  if (apMode)
+//  {
+//    WiFi.mode(WIFI_AP);
+//
+//    // Do a little work to get a unique-ish name. Append the
+//    // last two bytes of the MAC (HEX'd) to "Thing-":
+//    uint8_t mac[WL_MAC_ADDR_LENGTH];
+//    WiFi.softAPmacAddress(mac);
+//    String macID = String(mac[WL_MAC_ADDR_LENGTH - 2], HEX) +
+//                   String(mac[WL_MAC_ADDR_LENGTH - 1], HEX);
+//    macID.toUpperCase();
+//    String AP_NameString = "ESP8266 X-Mas " + macID;
+//
+//    char AP_NameChar[AP_NameString.length() + 1];
+//    memset(AP_NameChar, 0, AP_NameString.length() + 1);
+//
+//    for (int i = 0; i < AP_NameString.length(); i++)
+//      AP_NameChar[i] = AP_NameString.charAt(i);
+//
+//    WiFi.softAP(AP_NameChar, WiFiAPPSK);
+//
+//    Serial.printf("Connect to Wi-Fi access point: %s\n", AP_NameChar);
+//    Serial.println("and open http://192.168.4.1 in your browser");
+//  }
+//  else
+//  {
+//    WiFi.mode(WIFI_STA);
+//    Serial.printf("Connecting to %s\n", ssid);
+//    if (String(WiFi.SSID()) != String(ssid)) {
+//      WiFi.begin(ssid, password);
+//    }
+//
+//    while (WiFi.status() != WL_CONNECTED) {
+//      delay(500);
+//      Serial.print(".");
+//    }
+//
+//    Serial.print("Connected! Open http://");
+//    Serial.print(WiFi.localIP());
+//    Serial.println(" in your browser");
+//  }
 
   //  server.serveStatic("/", SPIFFS, "/index.htm"); // ,"max-age=86400"
 

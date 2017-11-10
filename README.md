@@ -21,6 +21,7 @@ Observera att FastLED är kompatibelt med de flesta adresserbara LED-typer, så 
 
 Funktioner
 --------
+* Saknas WiFi-login startar ESP:n som accesspunkt och man kan då ansluta till den och ställa in WiFi-nätverk på URL: http://192.168.4.1
 * Slå av och på ljusslingan
 * Justera ljusstyrka
 * Ändra vilket ljusläge som visas
