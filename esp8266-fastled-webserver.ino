@@ -245,6 +245,7 @@ void setup(void) {
     sendPattern();
   });
 
+  //TODO: do this for button press
   server.on("/patternUp", HTTP_POST, []() {
     adjustPattern(true);
     sendPattern();
@@ -313,7 +314,7 @@ PatternAndNameList patterns = {
   { pride, "Pride" },
   { rainbow, "Rainbow" },
   { rainbowWithGlitter, "Rainbow With Glitter" },
-  { simpleGlitter, "Simple Glitter"},
+  { snowGlitter, "Snow Glitter"},
   { confetti, "Confetti" },
   { sinelon, "Sinelon" },
   { juggle, "Juggle" },
@@ -644,9 +645,45 @@ void rainbowWithGlitter()
   addGlitter(80);
 }
 
-void simpleGlitter() {
-  // Simple glitter, only white LEDs
-  addGlitter(60);
+void snowGlitter() {
+  // Snow glitter, only white LEDs
+  for ( int i = 0; i < NUM_LEDS; i++) {
+      if ((leds[i].h > 0) || (leds[i].s > 0)) {
+          // This indicates some other mode was before, so start from beginning
+          fill_solid(CRGB::Black);
+
+          for ( int i = 0; i < NUM_LEDS/3; i++) { //NUM_LEDS truncated
+              int led = random16(0, NUM_LEDS);
+              while (led.v != 0) {
+                  led = random16(0, NUM_LEDS); // skip those already used
+              }
+              leds[led] = CHSV(0, 0, random16(10, 245));
+          }
+          break;
+      }
+  }
+  for ( int i = 0; i < NUM_LEDS; i++) {
+    if (leds[i].v > 0) {
+        if (leds[i].v == 254) {
+            leds[i].v++;
+        }
+        else if (leds[i].v == 1) {
+            leds[i].v--;
+            int led = random16(0, NUM_LEDS);
+            while (led.v != 0) {
+                led = random16(0, NUM_LEDS); // skip those already used
+            }
+            leds[led] = CHSV(0, 0, 2); //start new led
+
+        }
+        if (leds[i].v % 2 == 0) {
+            leds[i] = CHSV( 0, 0, leds[i].v+2); // + 2
+        }
+        else { // % 2 == 1
+            leds[i] = CHSV( 0, 0, leds[i].v-2);
+        }
+    }
+  }
 }
 
 void addGlitter( fract8 chanceOfGlitter)
