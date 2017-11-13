@@ -84,7 +84,7 @@ void setBrightness(int value);
 void showSolidColor();
 void rainbow();
 void rainbowWithGlitter();
-void simpleGlitter();
+void snowGlitter();
 void addGlitter( fract8 chanceOfGlitter);
 void confetti();
 void sinelon();
