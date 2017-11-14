@@ -85,6 +85,7 @@ void showSolidColor();
 void rainbow();
 void rainbowWithGlitter();
 void snowGlitter();
+bool isWhite(CRGB color);
 void addGlitter( fract8 chanceOfGlitter);
 void confetti();
 void sinelon();
@@ -648,42 +649,55 @@ void rainbowWithGlitter()
 void snowGlitter() {
   // Snow glitter, only white LEDs
   for ( int i = 0; i < NUM_LEDS; i++) {
-      if ((leds[i].h > 0) || (leds[i].s > 0)) {
+      if (leds[i]) {
           // This indicates some other mode was before, so start from beginning
-          fill_solid(CRGB::Black);
+          fill_solid(leds, NUM_LEDS, CRGB::Black);
 
           for ( int i = 0; i < NUM_LEDS/3; i++) { //NUM_LEDS truncated
               int led = random16(0, NUM_LEDS);
-              while (led.v != 0) {
+              while (leds[led].r != 0) {
                   led = random16(0, NUM_LEDS); // skip those already used
               }
-              leds[led] = CHSV(0, 0, random16(10, 245));
+              hsv2rgb_rainbow(CHSV(0, 0, random16(10, 245)), leds[led]);
           }
           break;
       }
   }
   for ( int i = 0; i < NUM_LEDS; i++) {
-    if (leds[i].v > 0) {
-        if (leds[i].v == 254) {
-            leds[i].v++;
+    if (leds[i].r > 0) {
+        if (leds[i].r == 254) {
+            leds[i].r++;
+            leds[i].g++;
+            leds[i].b++;
         }
-        else if (leds[i].v == 1) {
-            leds[i].v--;
+        else if (leds[i].r == 1) {
+            leds[i].r--;
+            leds[i].g--;
+            leds[i].b--;
             int led = random16(0, NUM_LEDS);
-            while (led.v != 0) {
+            while (leds[led].r != 0) {
                 led = random16(0, NUM_LEDS); // skip those already used
             }
-            leds[led] = CHSV(0, 0, 2); //start new led
+            hsv2rgb_rainbow(CHSV(0, 0, 2), leds[led]);
 
         }
-        if (leds[i].v % 2 == 0) {
-            leds[i] = CHSV( 0, 0, leds[i].v+2); // + 2
+        if (leds[i].r % 2 == 0) {
+          hsv2rgb_rainbow(CHSV(0, 0, leds[i].r+2), leds[i]);
+            //leds[i] = CHSV( 0, 0, leds[i].v+2); // + 2
         }
         else { // % 2 == 1
-            leds[i] = CHSV( 0, 0, leds[i].v-2);
+          hsv2rgb_rainbow(CHSV(0, 0, leds[i].r-2), leds[i]);
+            //leds[i] = CHSV( 0, 0, leds[i].v-2);
         }
     }
   }
+}
+
+bool isWhite(CRGB color) {
+  if ((color.r == color.g) && (color.g == color.b)) {
+    return true;
+  }
+  else return false;
 }
 
 void addGlitter( fract8 chanceOfGlitter)
