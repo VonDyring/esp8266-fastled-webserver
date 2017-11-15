@@ -649,7 +649,7 @@ void rainbowWithGlitter()
 void snowGlitter() {
   // Snow glitter, only white LEDs
   for ( int i = 0; i < NUM_LEDS; i++) {
-      if !(isWhite(leds[i])) {
+      if (!isWhite(leds[i])) {
           // This indicates some other mode was before, so start from beginning
           fill_solid(leds, NUM_LEDS, CRGB::Black);
 
