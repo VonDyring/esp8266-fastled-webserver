@@ -109,10 +109,6 @@ CRGBPalette16 gCurrentPalette( CRGB::Black);
 CRGBPalette16 gTargetPalette( gGradientPalettes[0] );
 
 uint8_t currentPatternIndex = 0; // Index number of which pattern is current
-bool autoplayEnabled = false;
-
-uint8_t autoPlayDurationSeconds = 10;
-unsigned int autoPlayTimeout = 0;
 
 uint8_t currentPaletteIndex = 0;
 
@@ -165,50 +161,6 @@ void setup(void) {
     }
     Serial.printf("\n");
   }
-
-//  if (apMode)
-//  {
-//    WiFi.mode(WIFI_AP);
-//
-//    // Do a little work to get a unique-ish name. Append the
-//    // last two bytes of the MAC (HEX'd) to "Thing-":
-//    uint8_t mac[WL_MAC_ADDR_LENGTH];
-//    WiFi.softAPmacAddress(mac);
-//    String macID = String(mac[WL_MAC_ADDR_LENGTH - 2], HEX) +
-//                   String(mac[WL_MAC_ADDR_LENGTH - 1], HEX);
-//    macID.toUpperCase();
-//    String AP_NameString = "ESP8266 X-Mas " + macID;
-//
-//    char AP_NameChar[AP_NameString.length() + 1];
-//    memset(AP_NameChar, 0, AP_NameString.length() + 1);
-//
-//    for (int i = 0; i < AP_NameString.length(); i++)
-//      AP_NameChar[i] = AP_NameString.charAt(i);
-//
-//    WiFi.softAP(AP_NameChar, WiFiAPPSK);
-//
-//    Serial.printf("Connect to Wi-Fi access point: %s\n", AP_NameChar);
-//    Serial.println("and open http://192.168.4.1 in your browser");
-//  }
-//  else
-//  {
-//    WiFi.mode(WIFI_STA);
-//    Serial.printf("Connecting to %s\n", ssid);
-//    if (String(WiFi.SSID()) != String(ssid)) {
-//      WiFi.begin(ssid, password);
-//    }
-//
-//    while (WiFi.status() != WL_CONNECTED) {
-//      delay(500);
-//      Serial.print(".");
-//    }
-//
-//    Serial.print("Connected! Open http://");
-//    Serial.print(WiFi.localIP());
-//    Serial.println(" in your browser");
-//  }
-
-  //  server.serveStatic("/", SPIFFS, "/index.htm"); // ,"max-age=86400"
 
   server.on("/all", HTTP_GET, []() {
     sendAll();
@@ -297,8 +249,6 @@ void setup(void) {
   server.begin();
 
   Serial.println("HTTP server started");
-
-  autoPlayTimeout = millis() + (autoPlayDurationSeconds * 1000);
 }
 
 typedef void (*Pattern)();
@@ -387,11 +337,6 @@ void loop(void) {
     nblendPaletteTowardPalette( gCurrentPalette, gTargetPalette, 16);
   }
 
-  if (autoplayEnabled && millis() > autoPlayTimeout) {
-    adjustPattern(true);
-    autoPlayTimeout = millis() + (autoPlayDurationSeconds * 1000);
-  }
-
   // Call the current pattern function once, updating the 'leds' array
   patterns[currentPatternIndex].pattern();
 
@@ -401,8 +346,7 @@ void loop(void) {
   FastLED.delay(1000 / FRAMES_PER_SECOND);
 }
 
-void loadSettings()
-{
+void loadSettings() {
   brightness = EEPROM.read(0);
 
   currentPatternIndex = EEPROM.read(1);
@@ -415,11 +359,10 @@ void loadSettings()
   byte g = EEPROM.read(3);
   byte b = EEPROM.read(4);
 
-  if (r == 0 && g == 0 && b == 0)
-  {
-  }
-  else
-  {
+  if (!(r == 0 && g == 0 && b == 0)) {
+  //}
+  //else
+  //{
     solidColor = CRGB(r, g, b);
   }
 
@@ -430,8 +373,7 @@ void loadSettings()
     currentPaletteIndex = paletteCount - 1;
 }
 
-void sendAll()
-{
+void sendAll() {
   String json = "{";
 
   json += "\"power\":" + String(power) + ",";
@@ -452,8 +394,7 @@ void sendAll()
   json += "}";
 
   json += ",\"patterns\":[";
-  for (uint8_t i = 0; i < patternCount; i++)
-  {
+  for (uint8_t i = 0; i < patternCount; i++) {
     json += "\"" + patterns[i].name + "\"";
     if (i < patternCount - 1)
       json += ",";
@@ -461,8 +402,7 @@ void sendAll()
   json += "]";
 
   json += ",\"palettes\":[";
-  for (uint8_t i = 0; i < paletteCount; i++)
-  {
+  for (uint8_t i = 0; i < paletteCount; i++) {
     json += "\"" + paletteNames[i] + "\"";
     if (i < paletteCount - 1)
       json += ",";
@@ -475,15 +415,13 @@ void sendAll()
   json = String();
 }
 
-void sendPower()
-{
+void sendPower() {
   String json = String(power);
   server.send(200, "text/json", json);
   json = String();
 }
 
-void sendPattern()
-{
+void sendPattern() {
   String json = "{";
   json += "\"index\":" + String(currentPatternIndex);
   json += ",\"name\":\"" + patterns[currentPatternIndex].name + "\"";
@@ -492,8 +430,7 @@ void sendPattern()
   json = String();
 }
 
-void sendPalette()
-{
+void sendPalette() {
   String json = "{";
   json += "\"index\":" + String(currentPaletteIndex);
   json += ",\"name\":\"" + paletteNames[currentPaletteIndex] + "\"";
@@ -502,15 +439,13 @@ void sendPalette()
   json = String();
 }
 
-void sendBrightness()
-{
+void sendBrightness() {
   String json = String(brightness);
   server.send(200, "text/json", json);
   json = String();
 }
 
-void sendSolidColor()
-{
+void sendSolidColor() {
   String json = "{";
   json += "\"r\":" + String(solidColor.r);
   json += ",\"g\":" + String(solidColor.g);
@@ -520,18 +455,15 @@ void sendSolidColor()
   json = String();
 }
 
-void setPower(uint8_t value)
-{
+void setPower(uint8_t value) {
   power = value == 0 ? 0 : 1;
 }
 
-void setSolidColor(CRGB color)
-{
+void setSolidColor(CRGB color) {
   setSolidColor(color.r, color.g, color.b);
 }
 
-void setSolidColor(uint8_t r, uint8_t g, uint8_t b)
-{
+void setSolidColor(uint8_t r, uint8_t g, uint8_t b) {
   solidColor = CRGB(r, g, b);
 
   EEPROM.write(2, r);
@@ -542,8 +474,7 @@ void setSolidColor(uint8_t r, uint8_t g, uint8_t b)
 }
 
 // increase or decrease the current pattern number, and wrap around at the ends
-void adjustPattern(bool up)
-{
+void adjustPattern(bool up) {
   if (up)
     currentPatternIndex++;
   else
@@ -554,15 +485,9 @@ void adjustPattern(bool up)
     currentPatternIndex = patternCount - 1;
   if (currentPatternIndex >= patternCount)
     currentPatternIndex = 0;
-
-  if (autoplayEnabled) {
-    EEPROM.write(1, currentPatternIndex);
-    EEPROM.commit();
-  }
 }
 
-void setPattern(int value)
-{
+void setPattern(int value) {
   // don't wrap around at the ends
   if (value < 0)
     value = 0;
@@ -571,14 +496,11 @@ void setPattern(int value)
 
   currentPatternIndex = value;
 
-  if (autoplayEnabled == 0) {
-    EEPROM.write(1, currentPatternIndex);
-    EEPROM.commit();
-  }
+  EEPROM.write(1, currentPatternIndex);
+  EEPROM.commit();
 }
 
-void setPalette(int value)
-{
+void setPalette(int value) {
   // don't wrap around at the ends
   if (value < 0)
     value = 0;
@@ -592,8 +514,7 @@ void setPalette(int value)
 }
 
 // adjust the brightness, and wrap around at the ends
-void adjustBrightness(bool up)
-{
+void adjustBrightness(bool up) {
   if (up)
     brightnessIndex++;
   else
@@ -613,8 +534,7 @@ void adjustBrightness(bool up)
   EEPROM.commit();
 }
 
-void setBrightness(int value)
-{
+void setBrightness(int value) {
   // don't wrap around at the ends
   if (value > 255)
     value = 255;
@@ -628,19 +548,16 @@ void setBrightness(int value)
   EEPROM.commit();
 }
 
-void showSolidColor()
-{
+void showSolidColor() {
   fill_solid(leds, NUM_LEDS, solidColor);
 }
 
-void rainbow()
-{
+void rainbow() {
   // FastLED's built-in rainbow generator
   fill_rainbow( leds, NUM_LEDS, gHue, 10);
 }
 
-void rainbowWithGlitter()
-{
+void rainbowWithGlitter() {
   // built-in FastLED rainbow, plus some random sparkly glitter
   rainbow();
   addGlitter(80);
@@ -679,7 +596,6 @@ void snowGlitter() {
                 led = random16(0, NUM_LEDS); // skip those already used
             }
             hsv2rgb_rainbow(CHSV(0, 0, 2), leds[led]);
-
         }
         if (leds[i].r % 2 == 0) {
           hsv2rgb_rainbow(CHSV(0, 0, leds[i].r+2), leds[i]);
@@ -700,15 +616,13 @@ bool isWhite(CRGB color) {
   else return false;
 }
 
-void addGlitter( fract8 chanceOfGlitter)
-{
+void addGlitter( fract8 chanceOfGlitter) {
   if ( random8() < chanceOfGlitter) {
     leds[ random16(NUM_LEDS) ] += CRGB::White;
   }
 }
 
-void confetti()
-{
+void confetti() {
   // random colored speckles that blink in and fade smoothly
   fadeToBlackBy( leds, NUM_LEDS, 10);
   int pos = random16(NUM_LEDS);
@@ -716,8 +630,7 @@ void confetti()
   leds[pos] += ColorFromPalette(palettes[currentPaletteIndex], gHue + random8(64));
 }
 
-void sinelon()
-{
+void sinelon() {
   // a colored dot sweeping back and forth, with fading trails
   fadeToBlackBy( leds, NUM_LEDS, 20);
   int pos = beatsin16(13, 0, NUM_LEDS - 1);
@@ -725,8 +638,7 @@ void sinelon()
   leds[pos] += ColorFromPalette(palettes[currentPaletteIndex], gHue, 192);
 }
 
-void bpm()
-{
+void bpm() {
   // colored stripes pulsing at a defined Beats-Per-Minute (BPM)
   uint8_t BeatsPerMinute = 62;
   CRGBPalette16 palette = palettes[currentPaletteIndex];
@@ -736,8 +648,7 @@ void bpm()
   }
 }
 
-void juggle()
-{
+void juggle() {
   // eight colored dots, weaving in and out of sync with each other
   fadeToBlackBy( leds, NUM_LEDS, 20);
   byte dothue = 0;
@@ -792,8 +703,7 @@ void pride() {
 // ColorWavesWithPalettes by Mark Kriegsman: https://gist.github.com/kriegsman/8281905786e8b2632aeb
 // This function draws color waves with an ever-changing,
 // widely-varying set of parameters, using a color palette.
-void colorwaves()
-{
+void colorwaves() {
   static uint16_t sPseudotime = 0;
   static uint16_t sLastMillis = 0;
   static uint16_t sHue16 = 0;
@@ -839,11 +749,9 @@ void colorwaves()
     nblend(leds[i], newcolor, 128);
   }
 }
-
 // Alternate rendering function just scrolls the current palette
 // across the defined LED strip.
-void palettetest()
-{
+void palettetest() {
   static uint8_t startindex = 0;
   startindex--;
   fill_palette( leds, NUM_LEDS, startindex, (256 / NUM_LEDS) + 1, gCurrentPalette, 255, LINEARBLEND);
