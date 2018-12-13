@@ -10,10 +10,9 @@ Vi använder mjukvaran till Lolin D1 Mini och WS2801-slingor.
 Eftersom WS2801 kommunicerar på 5V använder vi en egentillverkad Levelshift Shield som omvandlar Lolins 3.3V-signal till 5V.
 Förslag på delar:
 
-[Lolin D1 Mini](https://www.m.nu/esp8266/d1-mini)
-[D1 Mini Levelshift Shield](https://www.m.nu/esp8266-shields/levelshift-shield-for-wemos-d1-mini)
-
-[Enfärgad WS2801-slinga](https://www.m.nu/dotstar-ws2801/digital-rgb-led-slinga-ws2801-enfargad-kabel-svart-vit-1)
+* [Lolin D1 Mini](https://www.m.nu/esp8266/d1-mini)
+* [D1 Mini Levelshift Shield](https://www.m.nu/esp8266-shields/levelshift-shield-for-wemos-d1-mini)
+* [Enfärgad WS2801-slinga](https://www.m.nu/dotstar-ws2801/digital-rgb-led-slinga-ws2801-enfargad-kabel-svart-vit-1)
 
 Spänningsmatning (**5V**) kan i detta fall anslutas direkt till slingans matningskablar som då också förser Lolinen med ström.
 
