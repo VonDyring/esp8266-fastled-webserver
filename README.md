@@ -52,7 +52,7 @@ Appen behöver följande bibliotek, som antingen kan laddas ner manuellt från G
 * [WiFi Manager](https://github.com/tzapu/WiFiManager)  (OBS! version 0.12.0 måste användas för att slippa kompileringsfel)
 
 Ladda därefter ned koden härifrån Github, med den gröna __Clone or Download__-knappen ovan. Klicka på __Download ZIP__, och packa upp innehållet i din Arduino-sketchmapp.
-Gör eventuella modifikationer (t.ex. antal LEDs och **WiFi-inlogg**) och ladda därefter upp koden med Upload-knappen i IDE:n. Kom ihåg att välja rätt ESP-typ och seriellport under __Tools__.
+Gör eventuella modifikationer (t.ex. [antal LEDs](https://github.com/mpunktnu/esp8266-fastled-webserver/blob/master/esp8266-fastled-webserver.ino#L48) och **WiFi-inlogg**) och ladda därefter upp koden med Upload-knappen i IDE:n. Kom ihåg att välja rätt ESP-typ och seriellport under __Tools__.
 
 Filerna som visar webbapplikationen behöver laddas upp separat till chippets SPIFFS. För att göra det behöver du installera en plugin till Arduino IDE:n, [Arduino ESP8266FS tool](https://github.com/esp8266/Arduino/blob/master/doc/filesystem.rst#uploading-files-to-file-system).
 Ladda ner filen. Den ska sen packas upp i Arduino/tools-mappen enligt instruktionerna. När du lagt in den där och startat om IDE:n kan du öppna sketchen och klicka __Tools > ESP8266 Sketch Data Upload__, vilket laddar upp filerna till minnet. Observera att detta kan gå ganska långsamt, ibland tar det flera minuter.
